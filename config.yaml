@@ -1,0 +1,41 @@
+# ==============================================================================
+# SSL-InsNet Configuration File
+# A Sequence Structured Labeling Framework for Genomic Insertion Detection
+# ==============================================================================
+
+# Global Project Settings
+project:
+  name: "SSL-InsNet-Evaluation"
+  version: "1.0.0"
+  verbose: true
+
+# Environment & Hardware Configurations
+environment:
+  gpu_name: "0,1"              # CUDA devices to use (e.g., "0" for single, "0,1" for multi-GPU)
+  num_workers: 4               # PyTorch DataLoader worker threads
+  seed: 42                     # Random seed for reproducibility
+
+# Step 1: Feature Generation Parameters
+generate_feature:
+  bam_file: "./HG002_PB_5x_RG_HP10XtrioRTG.bam"
+  output_path: "./features_dir"
+  vcf_file: "./HG002_SVs_Tier1_v0.6.vcf.gz"
+  max_worker: 5                # CPU threads for multi-threading feature creation
+  contigs_list: [12, 13]       # Target chromosomes. Use [] to automatically use all chromosomes.
+
+# Step 2: Insertion Calling Parameters
+call_insertion:
+  data_path: "./features_dir"  # Must match the output_path from feature generation
+  ins_predict_weight: "./weights/SSL_InsNet_best.pth"
+  out_vcf_file: "./calls/output_variants.vcf"
+  save_length: 10000000        # Feature file span across nucleotide base sequence lengths
+  timesteps: 100               # Time step dimension for the Time-Distributed network
+  batch_size: 20               # Evaluation batch size per sub-sequence
+  support: 5                   # Minimum raw alignment read support to qualify an insertion
+  contigs: [12, 13]            # Chromosomes for prediction. Use [] for automated scanning.
+
+# Model Hyperparameters (Internal alignment with SSL_InsNet_model)
+model:
+  d_model: 320                 # Hidden embedding dimension
+  window_size: 200             # Single sequence window size
+  feature_dim: 5               # Number of structural/syntactic alignment features
